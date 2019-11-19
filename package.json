@@ -1,0 +1,16 @@
+{
+  "name": "tim-uniapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cos-js-sdk-v5": "^0.5.20",
+    "tim-js-sdk": "^2.1.4"
+  }
+}

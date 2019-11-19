@@ -1,0 +1,26 @@
+{
+  "name": "tim-uniapp",
+  "version": "1.0.0",
+  "lockfileVersion": 1,
+  "requires": true,
+  "dependencies": {
+    "cos-js-sdk-v5": {
+      "version": "0.5.20",
+      "resolved": "https://registry.npm.taobao.org/cos-js-sdk-v5/download/cos-js-sdk-v5-0.5.20.tgz?cache=0&sync_timestamp=1568174173125&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fcos-js-sdk-v5%2Fdownload%2Fcos-js-sdk-v5-0.5.20.tgz",
+      "integrity": "sha1-KhtEZQzYJ6EIvu1aDva2B96rQwc=",
+      "requires": {
+        "xmldom": "^0.1.27"
+      }
+    },
+    "tim-js-sdk": {
+      "version": "2.1.4",
+      "resolved": "https://registry.npm.taobao.org/tim-js-sdk/download/tim-js-sdk-2.1.4.tgz",
+      "integrity": "sha1-AWBevOnLC9zxE5i+YfnsP9PtCgw="
+    },
+    "xmldom": {
+      "version": "0.1.27",
+      "resolved": "http://registry.npm.taobao.org/xmldom/download/xmldom-0.1.27.tgz",
+      "integrity": "sha1-1QH5ezvbQDr4757MIFcxh6rawOk="
+    }
+  }
+}
