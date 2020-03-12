@@ -14,95 +14,39 @@
 					</view>
 				</view>
 				<view class="row" v-for="(item,index) in msgList" :key="index" :id="item.ID">
-					<!-- 系统消息 -->
-					<!-- <block v-if="item.type=='system'">
-						<view class="system"> -->
-							<!-- 文字消息 -->
-						<!-- 	<view v-if="item.msg.type=='text'" class="text">
-								{{item.msg.content.text}}
-							</view> -->
-							<!-- 领取红包消息 -->
-						<!-- 	<view v-if="item.msg.type=='redEnvelope'" class="red-envelope">
-								<image src="/static/img/red-envelope-chat.png"></image>
-								{{item.msg.content.text}}
-							</view>
-						</view>
-					</block> -->
-
 					<!-- 用户消息 -->
-					<block >
+					<block>
 						<!-- 自己发出的消息 -->
 						<view class="my" v-if="item.flow=='out'">
 							<!-- 左-消息 -->
 							<view class="left">
 								<!-- 文字消息 -->
-								
-								<view v-if="item.type==TIMTypes.MSG_TEXT" class="bubble">
-
+								<view v-if="item.type==TIM.TYPES.MSG_TEXT" class="bubble">
 									<rich-text :nodes="nodesFliter(item.payload.text)"></rich-text>
 								</view>
-								<!-- 语言消息 -->
-								<!-- 	<view v-if="row.msg.type=='voice'" class="bubble voice" @tap="playVoice(row.msg)" :class="playMsgid == row.msg.id?'play':''">
-									<view class="length">{{row.msg.content.length}}</view>
-									<view class="icon my-voice"></view>
-								</view> -->
-								<!-- 图片消息 -->
-								<!-- <view v-if="row.msg.type=='img'" class="bubble img" @tap="showPic(row.msg)">
-									<image :src="row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
-								</view> -->
-								<!-- 红包 -->
-								<!-- <view v-if="row.msg.type=='redEnvelope'" class="bubble red-envelope" @tap="openRedEnvelope(row.msg,index)">
-									<image src="/static/img/red-envelope.png"></image>
-									<view class="tis"> -->
-								<!-- 点击开红包 -->
-								<!-- 	</view>
-									<view class="blessing">
-										{{row.msg.content.blessing}}
-									</view>
-								</view> -->
-
 							</view>
 							<!-- 右-头像 -->
 							<view class="right">
-								<image :src="userInfo.info.img"></image>
+								<image :src="userInfo.img"></image>
 							</view>
 						</view>
 						<!-- 别人发出的消息 -->
 						<view class="other" v-else>
 							<!-- 左-头像 -->
 							<view class="left">
-								<image :src="TIMInfo.user.img"></image>
+								<image :src="toUserInfo.img"></image>
 							</view>
 							<!-- 右-用户名称-时间-消息 -->
 							<view class="right">
 								<view class="username">
-									<view class="name">{{TIMInfo.user.user}}</view>
+									<view class="name">{{toUserInfo.user}}</view>
 									<view class="time">{{timeFliter(item.time)}}</view>
 								</view>
-								
+
 								<!-- 文字消息 -->
-								<view v-if="item.type==TIMTypes.MSG_TEXT" class="bubble">
-									<rich-text  :nodes="nodesFliter(item.payload.text)"></rich-text>
+								<view v-if="item.type==TIM.TYPES.MSG_TEXT" class="bubble">
+									<rich-text :nodes="nodesFliter(item.payload.text)"></rich-text>
 								</view>
-								<!-- 语音消息 -->
-							<!-- 	<view v-if="row.msg.type=='voice'" class="bubble voice" @tap="playVoice(row.msg)" :class="playMsgid == row.msg.id?'play':''">
-									<view class="icon other-voice"></view>
-									<view class="length">{{row.msg.content.length}}</view>
-								</view> -->
-								<!-- 图片消息 -->
-								<!-- <view v-if="row.msg.type=='img'" class="bubble img" @tap="showPic(row.msg)">
-									<image :src="row.msg.content.url" :style="{'width': row.msg.content.w+'px','height': row.msg.content.h+'px'}"></image>
-								</view> -->
-								<!-- 红包 -->
-								<!-- <view v-if="row.msg.type=='redEnvelope'" class="bubble red-envelope" @tap="openRedEnvelope(row.msg,index)">
-									<image src="/static/img/red-envelope.png"></image>
-									<view class="tis"> -->
-										<!-- 点击开红包 -->
-								<!-- 	</view>
-									<view class="blessing">
-										{{row.msg.content.blessing}}
-									</view>
-								</view> -->
 							</view>
 						</view>
 					</block>
@@ -199,19 +143,22 @@
 	</view>
 </template>
 <script>
-	import TIM from 'tim-js-sdk';
+	import userList from '../../commen/tim/user.js'
+	import {mapState} from "vuex";
+	
 	export default {
 		data() {
 			return {
 				//TIM变量
-				TIMTypes:null,
-				TIMInfo:null,   
+				conversationActive:null,
+				toUserId:'',
+				toUserInfo:null,
 				userInfo:null,
-				pageId:1,
+				nextReqMessageID:'',
 				count:15,
-				pageOver:1,
+				isCompleted:'',
 				msgList:[],
-			
+			    TIM:null, 
 				
 				
 				//文字消息
@@ -263,12 +210,29 @@
 				}
 			};
 		},
+		computed:{
+			...mapState({
+				currentMessageList:state=>state.currentMessageList,
+			})
+		},
+		watch:{
+			currentMessageList(newVal,oldVal){
+				this.msgList = newVal
+				this.screenMsg(newVal,oldVal)
+			},
+		},
 		onLoad(option) {
-			this.TIMInfo = JSON.parse(uni.getStorageSync('TIMInfo'))
-			this.userInfo = JSON.parse(uni.getStorageSync('user'))
-			this.TIMTypes = this.$commen.TIM.TYPES
-			console.log(this.userInfo)
 		
+			this.userInfo = JSON.parse(uni.getStorageSync('userInfo'))
+			this.toUserId = this.$store.state.toUserId
+			this.conversationActive = this.$store.state.conversationActive
+			this.TIM = this.$TIM
+			//获取聊天对象的用户信息
+			userList.forEach(item=>{
+				if(this.toUserId == item.userId){
+					this.toUserInfo = item
+				}
+			})
 			this.getMsgList();
 			//语音自然播放结束
 			this.AUDIO.onEnded((res)=>{
@@ -287,26 +251,22 @@
 		},
 		onShow(){
 			this.scrollTop = 9999999;
-			
-			//模板借由本地缓存实现发红包效果，实际应用中请不要使用此方法。
-			//
-			uni.getStorage({
-				key: 'redEnvelopeData',
-				success:  (res)=>{
-					console.log(res.data);
-					let nowDate = new Date();
-					let lastid = this.msgList[this.msgList.length-1].msg.id;
-					lastid++;
-					let row = {type:"user",msg:{id:lastid,type:"redEnvelope",time:nowDate.getHours()+":"+nowDate.getMinutes(),userinfo:{uid:0,username:"大黑哥",face:"/static/img/face.jpg"},content:{blessing:res.data.blessing,rid:Math.floor(Math.random()*1000+1),isReceived:false}}};
-					this.screenMsg(row);
-					uni.removeStorage({key: 'redEnvelopeData'});
-				}
+		},
+		onUnload(){
+			//退出页面 将所有的会话内的消息设置为已读
+			let promise = this.tim.setMessageRead({conversationID: this.conversationActive.conversationID});
+			promise.then(function(imResponse) {
+				console.log('全部已读')
+			  // 已读上报成功
+			}).catch(function(imError) {
+			  // 已读上报失败
+			  console.warn('setMessageRead error:', imError);
 			});
 		},
 		methods:{
 			//聊天的节点加上外层的div
 			nodesFliter(str){
-				let nodeStr = '<div style="display: flex;align-items: center;word-wrap:break-word;">'+str+'</div>' 
+				let nodeStr = '<div style="align-items: center;word-wrap:break-word;">'+str+'</div>' 
 				return nodeStr
 			},
 			//时间过滤
@@ -315,135 +275,51 @@
 				let str = this.$commen.dateTimeFliter(timeData)		 
 				return str
 			},
-			// 接受消息(筛选处理)
-			screenMsg(msg){
-				//从长连接处转发给这个方法，进行筛选处理
-				if(msg.type=='system'){
-					// 系统消息
-					switch (msg.msg.type){
-						case 'text':
-							this.addSystemTextMsg(msg);
-							break;
-						case 'redEnvelope':
-							this.addSystemRedEnvelopeMsg(msg);
-							break;
+			// 接受消息(定位消息)
+			screenMsg(newVal,oldVal){
+				if(newVal[0].ID && oldVal[0].ID){
+					if(newVal[0].ID != oldVal[0].ID && newVal.length>=this.count ){
+						this.$nextTick(()=> {this.scrollToView =oldVal[0].ID});
+					}else{
+						this.$nextTick(()=> {this.scrollToView =newVal[newVal.length-1].ID});
 					}
-				}else if(msg.type=='user'){
-					// 用户消息
-					switch (msg.msg.type){
-						case 'text':
-							this.addTextMsg(msg);
-							break;
-						case 'voice':
-							this.addVoiceMsg(msg);
-							break;
-						case 'img':
-							this.addImgMsg(msg);
-							break;
-						case 'redEnvelope':
-							this.addRedEnvelopeMsg(msg);
-							break;
-					}
-					console.log('用户消息');
-					//非自己的消息震动
-					if(msg.msg.userinfo.uid!=this.myuid){
-						console.log('振动');
-						uni.vibrateLong();
-					}
+				}else{
+					this.$nextTick(()=> {this.scrollToView =newVal[newVal.length-1].ID});
 				}
-				this.$nextTick(function() {
-					// 滚动到底
-					this.scrollToView = 'msg'+msg.msg.id
-				});
 			},
-			
 			//触发滑动到顶部(加载历史信息记录)
 			loadHistory(e){
-				if(this.isHistoryLoading){
-					return ;
-				}
-				this.isHistoryLoading = true;//参数作为进入请求标识，防止重复请求
-				this.scrollAnimation = false;//关闭滑动动画
-				let Viewid = this.msgList[0].msg.id;//记住第一个信息ID
-				//本地模拟请求历史记录效果
-				setTimeout(()=>{
-					// 消息列表
-					let list = [
-						{type:"user",msg:{id:1,type:"text",time:"12:56",userinfo:{uid:0,username:"大黑哥",face:"/static/img/face.jpg"},content:{text:"为什么温度会相差那么大？"}}},
-						{type:"user",msg:{id:2,type:"text",time:"12:57",userinfo:{uid:1,username:"售后客服008",face:"/static/img/im/face/face_2.jpg"},content:{text:"这个是有偏差的，两个温度相差十几二十度是很正常的，如果相差五十度，那即是质量问题了。"}}},
-						{type:"user",msg:{id:3,type:"voice",time:"12:59",userinfo:{uid:1,username:"售后客服008",face:"/static/img/im/face/face_2.jpg"},content:{url:"/static/voice/1.mp3",length:"00:06"}}},
-						{type:"user",msg:{id:4,type:"voice",time:"13:05",userinfo:{uid:0,username:"大黑哥",face:"/static/img/face.jpg"},content:{url:"/static/voice/2.mp3",length:"00:06"}}},
-					]
-					// 获取消息中的图片,并处理显示尺寸
-					for(let i=0;i<list.length;i++){
-						if(list[i].type=='user'&&list[i].msg.type=="img"){
-							list[i].msg.content = this.setPicSize(list[i].msg.content);
-							this.msgImgList.unshift(list[i].msg.content.url);
-						}
-						list[i].msg.id = Math.floor(Math.random()*1000+1);
-						this.msgList.unshift(list[i]);
-					}
-					
+					// 更多消息列表
+						let conversationID = this.conversationActive.conversationID
+						let promise = this.tim.getMessageList({conversationID: conversationID,nextReqMessageID:this.nextReqMessageID,count: this.count});
+						promise.then((res)=> {
+						  this.$store.commit('unshiftCurrentMessageList',  res.data.messageList)
+						  this.nextReqMessageID =  res.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
+						  this.isCompleted =  res.data.isCompleted
+							
+						});
 					//这段代码很重要，不然每次加载历史数据都会跳到顶部
 					this.$nextTick(function() {
-						this.scrollToView = 'msg'+Viewid;//跳转上次的第一行信息位置
+						this.scrollToView = this.nextReqMessageID;//跳转上次的第一行信息位置
 						this.$nextTick(function() {
 							this.scrollAnimation = true;//恢复滚动动画
 						});
 						
 					});
 					this.isHistoryLoading = false;
-					
-				},1000)
 			},
-			getMsgTIM(event){
-				
-			},
-			
-			
 			// 加载初始页面消息
 			getMsgList(){
-				// 消息列表
-					let list = []
-					let conversationID = this.TIMInfo.conversation.conversationID
+				// 历史消息列表
+					let conversationID = this.conversationActive.conversationID
 					let promise = this.tim.getMessageList({conversationID: conversationID, count: this.count});
-					
-					
-					
 					promise.then((res)=> {
-					  this.msgList = res.data.messageList // 消息列表。
-					  this.pageId =  res.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
-					  this.pageOver =  res.data.isCompleted
-					  console.log(this.msgList)
+						this.$store.commit('pushCurrentMessageList',  res.data.messageList)
+					  this.nextReqMessageID =  res.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
+					  this.isCompleted =  res.data.isCompleted
+					  this.scrollToView = res.data.messageList[res.data.messageList.length-1].ID
+						console.log(this.nextReqMessageID)
 					});
-					
-				
-				// let list = [
-				// 	{type:"system",msg:{id:0,type:"text",content:{text:"欢迎进入HM-chat聊天室"}}},
-				// 	{type:"user",msg:{id:1,type:"text",time:"12:56",userinfo:{uid:0,username:"大黑哥",face:"/static/img/face.jpg"},content:{text:"为什么温度会相差那么大？"}}},
-				// 	{type:"user",msg:{id:2,type:"text",time:"12:57",userinfo:{uid:1,username:"售后客服008",face:"/static/img/im/face/face_2.jpg"},content:{text:"这个是有偏差的，两个温度相差十几二十度是很正常的，如果相差五十度，那即是质量问题了。"}}},
-				// 	{type:"user",msg:{id:3,type:"voice",time:"12:59",userinfo:{uid:1,username:"售后客服008",face:"/static/img/im/face/face_2.jpg"},content:{url:"/static/voice/1.mp3",length:"00:06"}}},
-				// 	{type:"user",msg:{id:4,type:"voice",time:"13:05",userinfo:{uid:0,username:"大黑哥",face:"/static/img/face.jpg"},content:{url:"/static/voice/2.mp3",length:"00:06"}}},
-				// 	{type:"user",msg:{id:5,type:"img",time:"13:05",userinfo:{uid:0,username:"大黑哥",face:"/static/img/face.jpg"},content:{url:"/static/img/p10.jpg",w:200,h:200}}},
-				// 	{type:"user",msg:{id:6,type:"img",time:"12:59",userinfo:{uid:1,username:"售后客服008",face:"/static/img/im/face/face_2.jpg"},content:{url:"/static/img/q.jpg",w:1920,h:1080}}},
-				// 	{type:"system",msg:{id:7,type:"text",content:{text:"欢迎进入HM-chat聊天室"}}},
-					
-				// 	{type:"system",msg:{id:9,type:"redEnvelope",content:{text:"售后客服008领取了你的红包"}}},
-				// 	{type:"user",msg:{id:10,type:"redEnvelope",time:"12:56",userinfo:{uid:0,username:"大黑哥",face:"/static/img/face.jpg"},content:{blessing:"恭喜发财，大吉大利，万事如意",rid:0,isReceived:false}}},
-				// 	{type:"user",msg:{id:11,type:"redEnvelope",time:"12:56",userinfo:{uid:1,username:"售后客服008",face:"/static/img/im/face/face_2.jpg"},content:{blessing:"恭喜发财",rid:1,isReceived:false}}},
-				// ]
-				// // 获取消息中的图片,并处理显示尺寸
-			
-				
-				
-			// 	for(let i=0;i<list.length;i++){
-			// 		if(list[i].type=='user'&&list[i].msg.type=="img"){
-			// 			list[i].msg.content = this.setPicSize(list[i].msg.content);
-			// 			this.msgImgList.push(list[i].msg.content.url);
-			// 		}
-			// 	}
-			
-			// 	this.msgList = list;
 				// 滚动到底部
 				this.$nextTick(function() {
 					//进入页面滚动到底部
@@ -465,7 +341,6 @@
 				}
 				return content;
 			},
-			
 			//更多功能(点击+弹出) 
 			showMore(){
 				this.isVoice = false;
@@ -581,41 +456,21 @@
 			
 			// 发送消息
 			sendMsg(content,type){
-				console.log()
-				
-				//实际应用中，此处应该提交长连接，模板仅做本地处理。
-				// var nowDate = new Date();
-				// let lastid = this.msgList[this.msgList.length-1].msg.id;
-				// lastid++;
-				// let msg = {type:'user',msg:{id:lastid,time:nowDate.getHours()+":"+nowDate.getMinutes(),type:type,userinfo:{uid:0,username:"大黑哥",face:"/static/img/face.jpg"},content:content}}
-				// // 发送消息
-				// this.screenMsg(msg);
-				// // 定时器模拟对方回复,三秒
-				// setTimeout(()=>{
-				// 	lastid = this.msgList[this.msgList.length-1].msg.id;
-				// 	lastid++;
-				// 	msg = {type:'user',msg:{id:lastid,time:nowDate.getHours()+":"+nowDate.getMinutes(),type:type,userinfo:{uid:1,username:"售后客服008",face:"/static/img/im/face/face_2.jpg"},content:content}}
-				// 	// 本地模拟发送消息
-				// 	this.screenMsg(msg);
-				// },3000)
 				let message = this.tim.createTextMessage({
-				  to: this.TIMInfo.user.userId,
-				   // to: '3',
+				  to: this.toUserId,
 				  conversationType: 'C2C',
 				  payload: {
 				    text: content.text
 				  }
 				});	
-				console.log(message)
-				let promise = this.tim.sendMessage(message);
-				promise.then((res)=>{
-				  // 发送成功
-				  console.log(res);
-				}).catch((err)=> {
-				  // 发送失败
-				  console.warn('sendMessage error:', err);
-				});
-				
+				this.$store.commit('pushCurrentMessageList', message)
+				let pomise = this.tim.sendMessage(message)
+				pomise.then(res=>{
+					this.$nextTick(()=> {
+						// 滚动到底
+						this.scrollToView = res.data.message.ID
+					});
+				})	
 			},
 			
 			// 添加文字消息到列表
@@ -679,9 +534,9 @@
 					uni.hideLoading();
 					this.windowsState = 'show';
 					
-				},200)
-				
+				},200)	
 			},
+			
 			// 关闭红包弹窗
 			closeRedEnvelope(){
 				this.windowsState = 'hide';
