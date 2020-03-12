@@ -14,7 +14,7 @@ git clone https://github.com/cometang/tim-uniapp.git
 
 npm install 
 
-使用HbuilderX打开后即可运行
+使用HbuilderX打开后即可运行[支持 APP 小程序 h5]
 ```
 
 #### 开发注意事项
@@ -26,6 +26,10 @@ npm install
 自带账号只是作为体验使用。
 ```
 
+
+
+![avatar](https://raw.githubusercontent.com/cometang/tim-uniapp/master/document/image/sdkAppId.png)
+
 ##### 2.修改基础用户数据
 
 ```
@@ -33,6 +37,8 @@ npm install
 控制台手动生成用户秘钥注意使用 “userId” 字段生成。
 正式开发有后端可以直接通过后端接口直接生成userSign，走接口就不需要手动在控制台生成用户秘钥。
 ```
+
+![avatar](https://github.com/cometang/tim-uniapp/blob/master/document/image/userSign.png?raw=true)
 
 ##### 3.注意TIM的动态监听--数据动态更新问题
 
