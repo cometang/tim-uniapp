@@ -37,7 +37,7 @@
 			})
 		},
 		onShow() {
-			
+			this.$store.commit('reset')
 		},
 		onLoad() {
 		},
@@ -64,7 +64,7 @@
 							uni.setStorageSync('userInfo', JSON.stringify(userInfo))
 							//tim 返回的用户信息
 							uni.setStorageSync('userTIMInfo', JSON.stringify(res.data))
-							uni.navigateTo({
+							uni.reLaunch({
 								url: '../tim/record'
 							})
 						}).catch((err) => {

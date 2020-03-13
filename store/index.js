@@ -26,10 +26,8 @@ const store = new Vuex.Store({
 		},
 		//退出登录重置状态
 		reset(state) {
-		  Object.assign(state, {
-		    isLogin: false,
-		    isSDKReady: false // TIM SDK 是否 ready
-		  })
+			state.isLogin = false
+			state.isSDKReady = false
 		},
 		//选择好友聊天--创建会话/拼接会话id
 		createConversationActive(state,toUserId){
@@ -74,8 +72,7 @@ const store = new Vuex.Store({
 			if(data){
 				state.currentMessageList = [...data,...state.currentMessageList]
 			}
-		}
-		
+		},
 	},
 	
     actions: {

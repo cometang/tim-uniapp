@@ -4,6 +4,7 @@
 			<view class="nav-tab">
 				<view :class="isActive ==0 ?'tab-item-active tab-item': 'tab-item'" @click="changeTabBtn(0)">聊天记录</view>
 				<view :class="isActive ==1 ?'tab-item-active tab-item1': 'tab-item1'" @click="changeTabBtn(1)">好友列表</view>
+				<view class="out-login" @click="outLoginBtn()"> 注 销</view>
 				<view class="clear-box"></view>
 			</view>
 		</view>
@@ -85,6 +86,18 @@
 
 		},
 		methods: {
+			//注销登录
+			outLoginBtn(){
+				let promise = this.tim.logout();
+				promise.then(res=> {
+					this.$store.commit('reset')
+					uni.reLaunch({
+						url: '../index/index'
+					})
+				}).catch(err=> {
+				   console.log('退出失败')
+				});
+			},
 			//聊天的节点加上外层的div
 			nodesFliter(str){
 				let nodeStr = '<div style="align-items: center;word-wrap:break-word;">'+str+'</div>' 
@@ -144,7 +157,10 @@
 		},
 		onShow() {
 			if (this.isSDKReady) {
+				console.log('2222')
 				this.getConversationList()
+			}else{
+				console.log('333333')
 			}
 		},
 		onLoad(){
@@ -314,5 +330,16 @@
 	}
 	.clear-box {
 		clear: both;
+	}
+	.out-login{
+		float: right;
+		margin-right:20rpx;
+		height: 70rpx;
+		line-height: 70rpx;
+		padding: 0 40rpx;
+		border-radius: 25rpx;
+		color: #fff;
+		background: #F56C6C;
+		font-size: 26rpx;
 	}
 </style>
