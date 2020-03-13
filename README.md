@@ -9,12 +9,20 @@
 
 #### 启动项目
 
+###### 方式一
+
 ```
 git clone https://github.com/cometang/tim-uniapp.git
 
 npm install 
 
 使用HbuilderX打开后即可运行[支持 APP 小程序 h5]
+```
+
+###### 方式二
+
+```
+直接进入uni-app插件市场将项目导入到hbuilderx 中即可运行
 ```
 
 #### 开发注意事项
@@ -56,4 +64,9 @@ App.vue 中写入了一些常用的监听事件，如有新的消息，会话列
 #### 点赞支持一下
 
 - 项目地址 https://github.com/cometang/tim-uniapp.git  点赞支持一下吧
+- uni-app插件市场地址：https://ext.dcloud.net.cn/plugin?id=1421
+
+#### 致谢
+
+聊天详情页使用  [回梦無痕](https://ext.dcloud.net.cn/publisher?id=5536)  的《聊天模板》https://ext.dcloud.net.cn/plugin?id=324 
 
