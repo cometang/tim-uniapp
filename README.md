@@ -35,7 +35,7 @@ npm install
 自带账号只是作为体验使用。
 ```
 
-![image](http://i2.tiimg.com/712663/a8baada1fa1c561a.png)
+![image](https://s1.ax1x.com/2020/03/25/8XnsYQ.png)
 
 
 
@@ -47,7 +47,7 @@ npm install
 正式开发有后端可以直接通过后端接口直接生成userSign，走接口就不需要手动在控制台生成用户秘钥。
 ```
 
-![image](http://i2.tiimg.com/712663/f0e5765db7f1e07d.png)
+![image](https://s1.ax1x.com/2020/03/25/8XnrFg.png)
 
 ##### 3.注意TIM的动态监听--数据动态更新问题
 

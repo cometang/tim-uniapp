@@ -4,7 +4,7 @@
 			<scroll-view class="msg-list" scroll-y="true" :scroll-with-animation="scrollAnimation" :scroll-top="scrollTop"
 			 :scroll-into-view="scrollToView" @scrolltoupper="loadHistory" upper-threshold="50">
 				<!-- 加载历史数据waitingUI -->
-				<view class="loading">
+				<view class="loading" v-if="isHistoryLoading">
 					<view class="spinner">
 						<view class="rect1"></view>
 						<view class="rect2"></view>
@@ -251,6 +251,7 @@
 		},
 		onShow(){
 			this.scrollTop = 9999999;
+			this.isHistoryLoading = false;
 		},
 		onUnload(){
 			//退出页面 将所有的会话内的消息设置为已读
@@ -278,17 +279,21 @@
 			// 接受消息(定位消息)
 			screenMsg(newVal,oldVal){
 				if(newVal[0].ID && oldVal[0].ID){
-					if(newVal[0].ID != oldVal[0].ID && newVal.length>=this.count ){
-						this.$nextTick(()=> {this.scrollToView =oldVal[0].ID});
+					if(newVal[0].ID != oldVal[0].ID && newVal.length>=this.count ){	
+						// this.$nextTick(()=> {this.scrollToView =oldVal[0].ID});
+						//拉取历史记录不用改变定位消息
 					}else{
+						//新的消息来了 自动向下滑动到最新消息
 						this.$nextTick(()=> {this.scrollToView =newVal[newVal.length-1].ID});
 					}
 				}else{
+					//第一次拉取历史记录 定位到最后一条消息
 					this.$nextTick(()=> {this.scrollToView =newVal[newVal.length-1].ID});
 				}
 			},
 			//触发滑动到顶部(加载历史信息记录)
 			loadHistory(e){
+					this.isHistoryLoading = true;
 					// 更多消息列表
 						let conversationID = this.conversationActive.conversationID
 						let promise = this.tim.getMessageList({conversationID: conversationID,nextReqMessageID:this.nextReqMessageID,count: this.count});
@@ -296,17 +301,16 @@
 						  this.$store.commit('unshiftCurrentMessageList',  res.data.messageList)
 						  this.nextReqMessageID =  res.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
 						  this.isCompleted =  res.data.isCompleted
-							
+						 this.isHistoryLoading = false;
 						});
-					//这段代码很重要，不然每次加载历史数据都会跳到顶部
-					this.$nextTick(function() {
-						this.scrollToView = this.nextReqMessageID;//跳转上次的第一行信息位置
-						this.$nextTick(function() {
-							this.scrollAnimation = true;//恢复滚动动画
-						});
-						
-					});
-					this.isHistoryLoading = false;
+					// //这段代码很重要，不然每次加载历史数据都会跳到顶部
+					// this.$nextTick(function() {
+					// 	this.scrollToView = this.nextReqMessageID;//跳转上次的第一行信息位置
+					// 	this.$nextTick(function() {
+					// 		this.scrollAnimation = true;//恢复滚动动画
+					// 	});	
+					// });
+					
 			},
 			// 加载初始页面消息
 			getMsgList(){
