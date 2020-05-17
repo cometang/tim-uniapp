@@ -227,7 +227,8 @@
 			this.toUserId = this.$store.state.toUserId
 			this.conversationActive = this.$store.state.conversationActive
 			this.TIM = this.$TIM
-			//获取聊天对象的用户信息
+			//获取聊天对象的用户信息---有后端的情况这里 使用后端api请求、
+			//防止初次聊天的时候 没有对方的基础信息
 			userList.forEach(item=>{
 				if(this.toUserId == item.userId){
 					this.toUserInfo = item
@@ -278,9 +279,11 @@
 			},
 			// 接受消息(定位消息)
 			screenMsg(newVal,oldVal){
-				if(newVal[0].ID && oldVal[0].ID){
+				if(newVal[0] && oldVal[0]){
 					if(newVal[0].ID != oldVal[0].ID && newVal.length>=this.count ){	
-						// this.$nextTick(()=> {this.scrollToView =oldVal[0].ID});
+						let _index = newVal.length-oldVal.length-3
+						this.$nextTick(()=> {this.scrollToView =newVal[_index].ID});
+						// console.log(this.scrollToView)
 						//拉取历史记录不用改变定位消息
 					}else{
 						//新的消息来了 自动向下滑动到最新消息
@@ -301,8 +304,9 @@
 						  this.$store.commit('unshiftCurrentMessageList',  res.data.messageList)
 						  this.nextReqMessageID =  res.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
 						  this.isCompleted =  res.data.isCompleted
-						 this.isHistoryLoading = false;
+						  this.isHistoryLoading = false;
 						});
+					
 					// //这段代码很重要，不然每次加载历史数据都会跳到顶部
 					// this.$nextTick(function() {
 					// 	this.scrollToView = this.nextReqMessageID;//跳转上次的第一行信息位置
@@ -323,6 +327,7 @@
 					  this.isCompleted =  res.data.isCompleted
 					  this.scrollToView = res.data.messageList[res.data.messageList.length-1].ID
 						console.log(this.nextReqMessageID)
+						console.log(this.scrollToView)
 					});
 				// 滚动到底部
 				this.$nextTick(function() {

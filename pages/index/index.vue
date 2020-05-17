@@ -40,11 +40,11 @@
 			this.$store.commit('reset')
 		},
 		onLoad() {
+			
 		},
 
 		methods: {
 			loginBtn() {
-				console.log()
 				if (this.user && this.pwd) {  //获取user的userId,实际接口为后端返回（user基础信息+userSig）
 					let userInfo = null
 					userList.forEach((item) => {

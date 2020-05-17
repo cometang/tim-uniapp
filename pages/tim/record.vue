@@ -10,22 +10,22 @@
 		</view>
 		<!-- 聊天记录 会话列表 -->
 		<view class="conversition-box" v-if="isActive ==0">
-			<view class="list-box" v-if="userAddConversationList.length>0">
-				<view class="item-box" v-for="(item,index) in userAddConversationList" :key="index" @click="toRoom(item)">
+			<view class="list-box" v-if="conversationList.length>0">
+				<view class="item-box" v-for="(item,index) in conversationList" :key="index" @click="toRoom(item)">
 					<view class="item-img">
-						<img :src="item.user.img" alt="">
+						<img :src="item.userProfile.avatar" alt="">
 					</view>
 					<view class="item-text">
 						<view class="item-user">
-							{{item.user.user}}
+							{{item.userProfile.nick}}
 						</view>
 						<view class="item-text-info">
-							<rich-text :nodes="nodesFliter(item.conversation.lastMessage.messageForShow)"></rich-text>
-							
+							<rich-text :nodes="nodesFliter(item.lastMessage.messageForShow)"></rich-text>
+
 						</view>
 					</view>
 					<view class="item-msg">
-						<view class="item-msg-icon" v-if="item.conversation.unreadCount">{{item.conversation.unreadCount}}</view>
+						<view class="item-msg-icon" v-if="item.unreadCount">{{item.unreadCount}}</view>
 					</view>
 				</view>
 			</view>
@@ -59,11 +59,9 @@
 		name: 'record',
 		data() {
 			return {
-				// conversationList: [],
 				userList: userList,
-				friendList:[],
+				friendList: [],
 				isActive: 0, //默认聊天记录
-				userAddConversationList:[]
 			}
 		},
 		computed: {
@@ -75,32 +73,50 @@
 		},
 		watch: {
 			isSDKReady(val) {
-				//isSDKReady == true 请求会话列表
+				//isSDKReady == true 
 				if (val) {
+					//更新用户自己的基础资料（头像+昵称+个性签名）
+					this.updateUserInfo()
+					//请求会话列表
 					this.getConversationList()
 				}
 			},
-			conversationList(val){
-				this.getUserInfo(val)
-			}
+			
 
 		},
 		methods: {
 			//注销登录
-			outLoginBtn(){
+			outLoginBtn() {
 				let promise = this.tim.logout();
-				promise.then(res=> {
+				promise.then(res => {
 					this.$store.commit('reset')
 					uni.reLaunch({
 						url: '../index/index'
 					})
-				}).catch(err=> {
-				   console.log('退出失败')
+				}).catch(err => {
+					console.log('退出失败')
+				});
+			},
+			//提交用户的基础信息到Im
+			updateUserInfo() {
+				//将已经登陆的用户信息 提交到IM中
+				let userInfo = JSON.parse(uni.getStorageSync('userInfo'))
+				let promise = this.tim.updateMyProfile({
+					nick: userInfo.user,
+					avatar: userInfo.img,
+					gender: this.$TIM.TYPES.GENDER_MALE,
+					selfSignature: '暂无个性签名',
+					allowType: this.$TIM.TYPES.ALLOW_TYPE_ALLOW_ANY
+				});
+				promise.then((res) => {
+					console.log('提交资料成功')
+				}).catch((err) => {
+					console.warn('updateMyProfile error:', imError); // 更新资料失败的相关信息
 				});
 			},
 			//聊天的节点加上外层的div
-			nodesFliter(str){
-				let nodeStr = '<div style="align-items: center;word-wrap:break-word;">'+str+'</div>' 
+			nodesFliter(str) {
+				let nodeStr = '<div style="align-items: center;word-wrap:break-word;">' + str + '</div>'
 				return nodeStr
 			},
 			//切换tab
@@ -117,28 +133,14 @@
 				promise.then((res) => {
 					let conversationList = res.data.conversationList; // 会话列表，用该列表覆盖原有的会话列表
 					if (conversationList.length) {
+						
 						//将返回的会话列表拼接上 用户的基本资料  
 						//说明：如果已经将用户信息 提交到tim服务端了 就不需要再次拼接
 						this.$store.commit("updateConversationList", conversationList);
 					}
-
 				}).catch((err) => {
 					console.warn('getConversationList error:', err); // 获取会话列表失败的相关信息
 				});
-			},
-			//根据消息列表请求聊天对象的用户信息 并完成数据拼接
-			getUserInfo(conversationList) {
-				 this.userAddConversationList = []
-				conversationList.forEach(item => {
-					let obj = {}
-					obj.conversation = item
-					userList.forEach(item1 => {
-						if (item.toAccount == item1.userId) {
-							obj.user = item1
-						}
-					})
-					this.userAddConversationList.push(JSON.parse(JSON.stringify(obj)))
-				})
 			},
 			toRoom(item) {
 				this.$store.commit('updateConversationActive', item)
@@ -159,20 +161,20 @@
 			if (this.isSDKReady) {
 				console.log('2222')
 				this.getConversationList()
-			}else{
+			} else {
 				console.log('333333')
 			}
 		},
-		onLoad(){
+		onLoad() {
 			let userInfo = JSON.parse(uni.getStorageSync('userInfo'))
 			this.friendList = []
-			userList.forEach(item=>{
-				if(item.userId != userInfo.userId){
+			userList.forEach(item => {
+				if (item.userId != userInfo.userId) {
 					console.log(item)
 					this.friendList.push(item)
 				}
 			})
-			
+
 		}
 	}
 </script>
@@ -312,12 +314,14 @@
 		color: #666;
 		font-weight: 500;
 	}
-	.item-msg{
+
+	.item-msg {
 		float: left;
 		width: 40rpx;
 		height: 100rpx;
 	}
-	.item-msg-icon{
+
+	.item-msg-icon {
 		width: 40rpx;
 		height: 40rpx;
 		border-radius: 50%;
@@ -328,12 +332,14 @@
 		text-align: center;
 		font-size: 24rpx;
 	}
+
 	.clear-box {
 		clear: both;
 	}
-	.out-login{
+
+	.out-login {
 		float: right;
-		margin-right:20rpx;
+		margin-right: 20rpx;
 		height: 70rpx;
 		line-height: 70rpx;
 		padding: 0 40rpx;

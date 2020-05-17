@@ -37,8 +37,8 @@ const store = new Vuex.Store({
 		},
 		//选择已有会话聊天--更新选中会话详情
 		updateConversationActive(state,conversationItem){
-			state.conversationActive = Object.assign({}, conversationItem.conversation);
-			state.toUserId = conversationItem.user.userId
+			state.conversationActive = Object.assign({}, conversationItem);
+			state.toUserId = conversationItem.userProfile.userID
 			state.currentMessageList = []
 		},
 		//更新会话列表
