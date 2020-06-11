@@ -11,7 +11,7 @@
 		<!-- 聊天记录 会话列表 -->
 		<view class="conversition-box" v-if="isActive ==0">
 			<view class="list-box" v-if="conversationList.length>0">
-				<view class="item-box" v-for="(item,index) in conversationList" :key="index" @click="toRoom(item)">
+				<view class="item-box" v-for="(item,index) in conversationList" :key="index" @click="toRoom(item)" v-if="item.type='C2C' && item.userProfile.nick">
 					<view class="item-img">
 						<img :src="item.userProfile.avatar" alt="">
 					</view>
@@ -21,7 +21,6 @@
 						</view>
 						<view class="item-text-info">
 							<rich-text :nodes="nodesFliter(item.lastMessage.messageForShow)"></rich-text>
-
 						</view>
 					</view>
 					<view class="item-msg">
@@ -81,7 +80,7 @@
 					this.getConversationList()
 				}
 			},
-			
+
 
 		},
 		methods: {
@@ -133,7 +132,7 @@
 				promise.then((res) => {
 					let conversationList = res.data.conversationList; // 会话列表，用该列表覆盖原有的会话列表
 					if (conversationList.length) {
-						
+
 						//将返回的会话列表拼接上 用户的基本资料  
 						//说明：如果已经将用户信息 提交到tim服务端了 就不需要再次拼接
 						this.$store.commit("updateConversationList", conversationList);
@@ -166,6 +165,8 @@
 			}
 		},
 		onLoad() {
+			console.log('...')
+			console.log(this.conversationList)
 			let userInfo = JSON.parse(uni.getStorageSync('userInfo'))
 			this.friendList = []
 			userList.forEach(item => {

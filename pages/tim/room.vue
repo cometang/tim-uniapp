@@ -42,7 +42,6 @@
 									<view class="name">{{toUserInfo.user}}</view>
 									<view class="time">{{timeFliter(item.time)}}</view>
 								</view>
-
 								<!-- 文字消息 -->
 								<view v-if="item.type==TIM.TYPES.MSG_TEXT" class="bubble">
 									<rich-text :nodes="nodesFliter(item.payload.text)"></rich-text>
@@ -281,7 +280,8 @@
 			screenMsg(newVal,oldVal){
 				if(newVal[0] && oldVal[0]){
 					if(newVal[0].ID != oldVal[0].ID && newVal.length>=this.count ){	
-						let _index = newVal.length-oldVal.length-3
+						
+						let _index = newVal.length-oldVal.length-1
 						this.$nextTick(()=> {this.scrollToView =newVal[_index].ID});
 						// console.log(this.scrollToView)
 						//拉取历史记录不用改变定位消息
@@ -290,8 +290,9 @@
 						this.$nextTick(()=> {this.scrollToView =newVal[newVal.length-1].ID});
 					}
 				}else{
+					console.log('*****')
 					//第一次拉取历史记录 定位到最后一条消息
-					this.$nextTick(()=> {this.scrollToView =newVal[newVal.length-1].ID});
+					this.$nextTick(()=> {this.scrollToView =newVal[newVal.length-1].ID;this.scrollTop = 9999999;});
 				}
 			},
 			//触发滑动到顶部(加载历史信息记录)
@@ -326,8 +327,6 @@
 					  this.nextReqMessageID =  res.data.nextReqMessageID // 用于续拉，分页续拉时需传入该字段。
 					  this.isCompleted =  res.data.isCompleted
 					  this.scrollToView = res.data.messageList[res.data.messageList.length-1].ID
-						console.log(this.nextReqMessageID)
-						console.log(this.scrollToView)
 					});
 				// 滚动到底部
 				this.$nextTick(function() {

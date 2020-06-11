@@ -15,7 +15,10 @@
 		{
 			"path": "pages/tim/room",
 			"style": {
-				"navigationBarTitleText": "聊天室"
+				"navigationBarTitleText": "聊天室",
+				"app-plus": {		//修复聊天页 app端输入法上顶问题
+					"softinputMode": "adjustResize"
+				}
 			}
 		}
 	],
