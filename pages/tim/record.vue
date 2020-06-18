@@ -5,33 +5,43 @@
 				<view :class="isActive ==0 ?'tab-item-active tab-item': 'tab-item'" @click="changeTabBtn(0)">聊天记录</view>
 				<view :class="isActive ==1 ?'tab-item-active tab-item1': 'tab-item1'" @click="changeTabBtn(1)">好友列表</view>
 				<view class="out-login" @click="outLoginBtn()"> 注 销</view>
+
 				<view class="clear-box"></view>
 			</view>
 		</view>
 		<!-- 聊天记录 会话列表 -->
 		<view class="conversition-box" v-if="isActive ==0">
-			<view class="list-box" v-if="conversationList.length>0">
-				<view class="item-box" v-for="(item,index) in conversationList" :key="index" @click="toRoom(item)" v-if="item.type='C2C' && item.userProfile.nick">
-					<view class="item-img">
-						<img :src="item.userProfile.avatar" alt="">
-					</view>
-					<view class="item-text">
-						<view class="item-user">
-							{{item.userProfile.nick}}
+			<view class="list-box" v-if="conversationList && conversationList.length>0">
+				<view v-for="(item,index) in conversationList" :key="index" @click="toRoom(item)">
+					<view class="item-box">
+						<view class="item-img">
+							<img :src="item.userProfile.avatar" alt="">
 						</view>
-						<view class="item-text-info">
-							<rich-text :nodes="nodesFliter(item.lastMessage.messageForShow)"></rich-text>
+						<view class="item-text">
+							<view class="item-user">
+								{{item.userProfile.nick}}
+							</view>
+							<view class="item-text-info">
+								<rich-text :nodes="nodesFliter(item.lastMessage.messageForShow)"></rich-text>
+							</view>
 						</view>
+						<view class="item-msg">
+							<view class="item-msg-icon" v-if="item.unreadCount">{{item.unreadCount}}</view>
+						</view>
+
 					</view>
-					<view class="item-msg">
-						<view class="item-msg-icon" v-if="item.unreadCount">{{item.unreadCount}}</view>
-					</view>
+
+
 				</view>
 			</view>
+
+
 			<view class="list-box" v-else>
 				<span class="msg-box">暂无聊天记录，请选择好友进行聊天</span>
 			</view>
 		</view>
+
+
 		<!-- 好友列表 -->
 		<view class="user-box" v-if="isActive ==1">
 			<view class="list-box">
@@ -44,6 +54,8 @@
 					</view>
 				</view>
 			</view>
+
+			<view class="btn" style="margin-top: 40rpx;"><button type="default" @click="createGroup()">创建群组</button></view>
 		</view>
 
 	</view>
@@ -84,6 +96,32 @@
 
 		},
 		methods: {
+			createGroup() {
+				let promise = this.tim.createGroup({
+					type: this.$TIM.TYPES.GRP_PUBLIC,
+					name: '阿萨德',
+					memberList: [{
+						userId: '3'
+					}, {
+						userId: '4'
+					}] // 如果填写了 memberList，则必须填写 userID
+				});
+				promise.then(function(imResponse) { // 创建成功
+					console.log(imResponse.data.group); // 创建的群的资料
+					console.log('sss')
+				}).catch(function(imError) {
+					console.warn('createGroup error:', imError); // 创建群组失败的相关信息
+				});
+			},
+			getGroup() {
+				let promise = this.tim.getGroupList();
+				promise.then(function(imResponse) {
+					console.log('群组')
+					console.log(imResponse.data.groupList); // 群组列表
+				}).catch(function(imError) {
+					console.warn('getGroupList error:', imError); // 获取群组列表失败的相关信息
+				});
+			},
 			//注销登录
 			outLoginBtn() {
 				let promise = this.tim.logout();
