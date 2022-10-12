@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "cos-js-sdk-v5": "^0.5.20",
+    "cos-js-sdk-v5": "^1.4.6",
     "tim-js-sdk": "^2.1.4"
   }
 }
